@@ -13,5 +13,20 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-    
-__version__ = "2024.7"
+
+import uuid
+
+class Click_Button:
+    def __init__(self, element, text, callback):
+        self.text = text
+        self.callback = callback
+        self.element = element
+    pass
+
+    def _repr_html_(self):
+        callback_id = "button-" + str(uuid.uuid4())
+        output.register_callback(callback_id, self.callback)
+        html = self.element.format(title = self.text, callback_id = callback_id)
+        return html
+    pass
+pass
