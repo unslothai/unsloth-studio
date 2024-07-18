@@ -23,7 +23,7 @@ classifiers = [
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "unsloth_studio.utils.__version__"}
+version = {attr = "unsloth_studio.__version__"}
 
 [tool.setuptools]
 include-package-data = false
