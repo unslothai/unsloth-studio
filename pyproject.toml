@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "unsloth_studio"
+dynamic = ["version"]
+description = "Studio elements for Unsloth"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+keywords = ["ai", "llm",]
+authors = [
+    {email = "info@unsloth.ai"},
+    {name = "Unsloth AI team"},
+]
+maintainers = [
+    {name = "Daniel Han", email = "danielhanchen@gmail.com"},
+    {name = "Michael Han", email = "info@unsloth.ai"},
+]
+classifiers = [
+    "Programming Language :: Python",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "unsloth_studio.utils.__version__"}
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+exclude = ["images*"]
+
+[project.urls]
+homepage = "http://www.unsloth.ai"
+documentation = "https://github.com/unslothai/unsloth"
+repository = "https://github.com/unslothai/unsloth"
