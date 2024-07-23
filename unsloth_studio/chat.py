@@ -68,6 +68,8 @@ import io
 import logging
 logging.getLogger("transformers.utils.hub").setLevel(logging.CRITICAL+1)
 
+print("Loading model ... Please wait 1 more minute! ...")
+
 with redirect_stdout(io.StringIO()):
     from unsloth import FastLanguageModel
     import torch
@@ -79,6 +81,7 @@ with redirect_stdout(io.StringIO()):
     )
     FastLanguageModel.for_inference(model)
 pass
+clear_output()
 
 import gradio
 gradio.strings.en["SHARE_LINK_DISPLAY"] = ""
