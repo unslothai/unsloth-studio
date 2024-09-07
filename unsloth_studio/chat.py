@@ -25,7 +25,7 @@ print("Installing packages for 🦥 Unsloth Studio ... Please wait 1 minute ..."
 
 install_first = [
     "pip", "install",
-    "huggingface_hub", "hf_transfer",
+    "huggingface_hub", "hf_transfer", "triton",
 ]
 install_first = subprocess.Popen(install_first)
 install_first.wait()
