@@ -25,7 +25,7 @@ print("Installing packages for 🦥 Unsloth Studio ... Please wait 1 minute ..."
 
 install_first = [
     "pip", "install",
-    "huggingface_hub[hf_transfer]",
+    "huggingface_hub", "hf_transfer",
 ]
 install_first = subprocess.Popen(install_first)
 install_first.wait()
@@ -56,7 +56,7 @@ install_second.wait()
 
 install_dependencies = [
     "pip", "install", "--no-deps",
-    "xformers<0.0.27", "trl<0.9.0", "peft", "accelerate", "bitsandbytes",
+    "xformers", "trl", "peft", "accelerate", "bitsandbytes",
 ]
 install_dependencies = subprocess.Popen(install_dependencies)
 install_dependencies.wait()
