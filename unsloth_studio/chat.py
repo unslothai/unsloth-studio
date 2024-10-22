@@ -25,10 +25,19 @@ print("Installing packages for 🦥 Unsloth Studio ... Please wait 1 minute ..."
 
 install_first = [
     "pip", "install",
-    "huggingface_hub", "hf_transfer", "triton",
+    "unsloth"
 ]
+
 install_first = subprocess.Popen(install_first)
 install_first.wait()
+
+uninstall_install_first = [
+    "pip", "uninstall", "-y",
+    "unsloth"
+]
+
+uninstall_install_first = subprocess.Popen(uninstall_install_first)
+uninstall_install_first.wait()
 
 install_second = [
     "pip", "install",
