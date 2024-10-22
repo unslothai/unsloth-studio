@@ -41,10 +41,21 @@ uninstall_install_first.wait()
 
 install_second = [
     "pip", "install",
-    "gradio",
+    "gradio==4.44.1",
     "unsloth[colab-new]@git+https://github.com/unslothai/unsloth.git",
 ]
 install_second = subprocess.Popen(install_second)
+install_second.wait()
+
+upgrade_huggingface_hub = [
+    "pip", "install", 
+    "huggingface-hub",
+    "-U",
+    "--force-reinstall"
+]
+
+upgrade_huggingface_hub = subprocess.Popen(upgrade_huggingface_hub)
+
 
 from huggingface_hub import snapshot_download
 import warnings
