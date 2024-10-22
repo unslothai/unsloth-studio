@@ -21,7 +21,7 @@ os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 os.environ["GRADIO_ANALYTICS_ENABLED"] = "False"
 MODEL_NAME = "unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit"
 
-print("Installing packages for 🦥 Unsloth Studio ... Please wait 1 minute ...")
+print("Installing packages for 🦥 Unsloth Studio ... Please wait 3 minute ...")
 
 install_first = [
     "pip", "install",
@@ -55,6 +55,7 @@ upgrade_huggingface_hub = [
 ]
 
 upgrade_huggingface_hub = subprocess.Popen(upgrade_huggingface_hub)
+upgrade_huggingface_hub.wait()
 
 
 from huggingface_hub import snapshot_download
@@ -72,14 +73,6 @@ from huggingface_hub.utils import disable_progress_bars
 disable_progress_bars()
 snapshot_download(repo_id = MODEL_NAME, repo_type = "model")
 
-install_second.wait()
-
-install_dependencies = [
-    "pip", "install", "--no-deps",
-    "xformers", "trl", "peft", "accelerate", "bitsandbytes",
-]
-install_dependencies = subprocess.Popen(install_dependencies)
-install_dependencies.wait()
 clear_output()
 
 
