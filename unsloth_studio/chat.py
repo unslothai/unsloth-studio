@@ -21,21 +21,42 @@ os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 os.environ["GRADIO_ANALYTICS_ENABLED"] = "False"
 MODEL_NAME = "unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit"
 
-print("Installing packages for 🦥 Unsloth Studio ... Please wait 1 minute ...")
+print("Installing packages for 🦥 Unsloth Studio ... Please wait 5 minutes ...")
 
 install_first = [
     "pip", "install",
-    "huggingface_hub", "hf_transfer", "triton",
+    "unsloth"
 ]
+
 install_first = subprocess.Popen(install_first)
 install_first.wait()
 
+uninstall_install_first = [
+    "pip", "uninstall", "-y",
+    "unsloth"
+]
+
+uninstall_install_first = subprocess.Popen(uninstall_install_first)
+uninstall_install_first.wait()
+
 install_second = [
     "pip", "install",
-    "gradio",
+    "gradio==4.44.1",
     "unsloth[colab-new]@git+https://github.com/unslothai/unsloth.git",
 ]
 install_second = subprocess.Popen(install_second)
+install_second.wait()
+
+upgrade_huggingface_hub = [
+    "pip", "install", 
+    "huggingface-hub",
+    "-U",
+    "--force-reinstall"
+]
+
+upgrade_huggingface_hub = subprocess.Popen(upgrade_huggingface_hub)
+upgrade_huggingface_hub.wait()
+
 
 from huggingface_hub import snapshot_download
 import warnings
@@ -52,14 +73,6 @@ from huggingface_hub.utils import disable_progress_bars
 disable_progress_bars()
 snapshot_download(repo_id = MODEL_NAME, repo_type = "model")
 
-install_second.wait()
-
-install_dependencies = [
-    "pip", "install", "--no-deps",
-    "xformers", "trl", "peft", "accelerate", "bitsandbytes",
-]
-install_dependencies = subprocess.Popen(install_dependencies)
-install_dependencies.wait()
 clear_output()
 
 
