@@ -20,15 +20,7 @@ __all__ = [
 ]
 
 import torch
-from typing import Optional, Tuple, Dict, List, Callable, Any
-_mark_dynamic = torch._dynamo.mark_dynamic
-torch_compile_options = {
-    "epilogue_fusion"   : True,
-    "max_autotune"      : False, # Disable tuned matmuls
-    "shape_padding"     : True,
-    "trace.enabled"     : False,
-    "triton.cudagraphs" : False,
-}
+from .utils import *
 
 class UnslothEfficientLoss(torch.autograd.Function):
     @staticmethod
@@ -64,12 +56,13 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 shift_target = target
             return shift_target, (shift_target != ignore_index).sum()
         pass
-        process_labels = torch.compile(
-            process_labels,
-            dynamic = None,
-            options = torch_compile_options,
-        )
-        _mark_dynamic(target, 1)
+        if UNSLOTH_COMPILE_ENABLE:
+            process_labels = torch.compile(
+                process_labels,
+                dynamic = None,
+                options = torch_compile_options,
+            )
+            _mark_dynamic(target, 1)
         target, n_labels = process_labels(target)
         divisor = n_labels if reduction == "mean" else 1.0
 
@@ -143,11 +136,12 @@ class UnslothEfficientLoss(torch.autograd.Function):
             if grad_input_chunk is not None: grad_input_chunk.copy_(chunk_grad_input)
             total_loss.add_(chunk_loss)
         pass
-        accumulate_chunk = torch.compile(
-            accumulate_chunk,
-            dynamic = None,
-            options = torch_compile_options,
-        )
+        if UNSLOTH_COMPILE_ENABLE:
+            accumulate_chunk = torch.compile(
+                accumulate_chunk,
+                dynamic = None,
+                options = torch_compile_options,
+            )
         
         input_chunks  = torch.chunk(_input, n_chunks, dim = 0)
         target_chunks = torch.chunk(target, n_chunks, dim = 0)
@@ -157,9 +151,10 @@ class UnslothEfficientLoss(torch.autograd.Function):
         for input_chunk, target_chunk, grad_input_chunk in \
             zip(input_chunks, target_chunks, grad_input_chunks):
             
-            _mark_dynamic(input_chunk,      0)
-            _mark_dynamic(target_chunk,     0)
-            _mark_dynamic(grad_input_chunk, 0)
+            if UNSLOTH_COMPILE_ENABLE: 
+                _mark_dynamic(input_chunk,      0)
+                _mark_dynamic(target_chunk,     0)
+                _mark_dynamic(grad_input_chunk, 0)
             accumulate_chunk(input_chunk, target_chunk, grad_input_chunk)
         pass
         
