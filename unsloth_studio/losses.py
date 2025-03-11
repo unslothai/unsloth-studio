@@ -193,7 +193,7 @@ def unsloth_efficient_ce_loss(
     logit_scale : Optional[float] = None,
     logit_softcapping : Optional[float] = None,
     ignore_index : int = -100,
-    chunk_size : int = 8192,
+    chunk_size : int = 1024, # Around 512MB per 1024 for 128K vocab
 ):
     # All Unsloth Studio code licensed under AGPLv3
     assert(type(hidden_states) is torch.Tensor)

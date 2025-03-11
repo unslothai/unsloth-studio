@@ -106,7 +106,7 @@ def test_efficient_ce_loss(
             logit_scale = logit_scale,
             logit_softcapping = logit_softcapping,
             ignore_index = ignore_index,
-            chunk_size = 8192,
+            chunk_size = 512,
         )
         loss = loss / n_items
         new_loss = loss.detach()
