@@ -67,7 +67,9 @@ class UnslothEfficientLoss(torch.autograd.Function):
         divisor = n_labels if reduction == "mean" else 1.0
 
         def compute_loss(input_chunk, weight, bias, target):
-            input_chunk = input_chunk.to(dtype = weight.dtype, device = device)
+            input_chunk = input_chunk.to(weight.device)
+            weight = weight.to(input_chunk.dtype)
+            bias   = bias  .to(input_chunk.dtype)
             if bias is not None:
                 logits = torch.addmm(bias, input_chunk, weight.t())
             else:
@@ -83,9 +85,10 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 logits = torch.tanh(logits)
                 logits = logits * logit_softcapping
             
-            # Upcast and loss_function
-            logits = logits.float()
-            loss = _loss_function(logits, target)
+            # Upcast and loss_function -> force float32 upcast
+            with torch.autocast(device_type = "cuda", enabled = False):
+                logits = logits.float()
+                loss = _loss_function(logits, target)
             return loss / divisor
         pass
 
