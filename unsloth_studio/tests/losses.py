@@ -22,7 +22,7 @@ from ..losses import (
 import torch
 
 
-def test_efficient_ce_loss(
+def _test_efficient_ce_loss(
     bsz = 4,
     qlen = 2009,
     hd = 4096,
@@ -43,7 +43,11 @@ def test_efficient_ce_loss(
     torch.manual_seed(random_state)
 
     hidden_states = torch.randn((bsz, qlen, hd), dtype = dtype, requires_grad = True, device = device)
-    lm_head = torch.nn.Linear(hd, vocab_size, bias = has_bias, device = device, dtype = torch.float32)
+    if weight_requires_grad or bias_requires_grad:
+        lm_head = torch.nn.Linear(hd, vocab_size, bias = has_bias, device = device, dtype = torch.float32)
+    else:
+        # Downcast to bfloat16
+        lm_head = torch.nn.Linear(hd, vocab_size, bias = has_bias, device = device, dtype = dtype)
     lm_head.weight.requires_grad_(weight_requires_grad)
     if has_bias: lm_head.bias.requires_grad_(bias_requires_grad)
     labels = torch.randint(0, vocab_size, (bsz, qlen), device = device).to(torch.int64)
@@ -125,7 +129,7 @@ def test_efficient_ce_loss(
     torch.testing.assert_close(new_hidden_states_grad, old_hidden_states_grad)
     if weight_requires_grad:
         assert(new_weight_grad is not None and old_weight_grad is not None)
-        torch.testing.assert_close(new_weight_grad, old_weight_grad, atol = 1e-2, rtol = 1e-2)
+        torch.testing.assert_close(new_weight_grad, old_weight_grad, atol = 1e-4, rtol = 1e-6)
     else:
         assert(new_weight_grad is None and old_weight_grad is None)
 
@@ -134,4 +138,56 @@ def test_efficient_ce_loss(
         torch.testing.assert_close(new_bias_grad, old_bias_grad)
     else:
         assert(new_bias_grad is None and old_bias_grad is None)
+pass
+
+
+def test_efficient_ce_loss():
+    _test_efficient_ce_loss(
+        bsz = 4,
+        qlen = 2048,
+        hd = 4096,
+        vocab_size = 16 * 1024,
+        dtype = torch.float16,
+        reduction = "sum",
+        logit_scale = None,
+        logit_softcapping = None,
+        random_state = 3407,
+        has_bias = True,
+        weight_requires_grad = True,
+        bias_requires_grad   = True,
+        ignore_index = -100,
+        device = "cuda",
+    )
+    _test_efficient_ce_loss(
+        bsz = 3,
+        qlen = 2047,
+        hd = 4097,
+        vocab_size = 64 * 1024,
+        dtype = torch.bfloat16,
+        reduction = "sum",
+        logit_scale = None,
+        logit_softcapping = 50.0,
+        random_state = 3409,
+        has_bias = False,
+        weight_requires_grad = False,
+        bias_requires_grad   = False,
+        ignore_index = -101,
+        device = "cuda",
+    )
+    _test_efficient_ce_loss(
+        bsz = 1,
+        qlen = 1023,
+        hd = 2048,
+        vocab_size = 128 * 1024,
+        dtype = torch.float16,
+        reduction = "mean",
+        logit_scale = 0.125,
+        logit_softcapping = None,
+        random_state = 3410,
+        has_bias = False,
+        weight_requires_grad = True,
+        bias_requires_grad   = True,
+        ignore_index = -200,
+        device = "cuda",
+    )
 pass
