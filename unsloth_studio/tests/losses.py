@@ -110,10 +110,10 @@ def _test_efficient_ce_loss(
     if old_weight_grad is not None: old_weight_grad = old_weight_grad.detach()
     if old_bias_grad is not None: old_bias_grad = old_bias_grad.detach()
     print(
-        loss,
-        torch.amax(old_hidden_states_grad),
-        torch.amax(old_weight_grad) if old_weight_grad is not None else None,
-        torch.amax(old_bias_grad) if old_bias_grad is not None else None
+        loss.item(),
+        torch.amax(old_hidden_states_grad).item(),
+        torch.amax(old_weight_grad).item() if old_weight_grad is not None else None,
+        torch.amax(old_bias_grad).item() if old_bias_grad is not None else None
     )
 
     # Get new CE Loss
@@ -146,10 +146,10 @@ def _test_efficient_ce_loss(
     if new_weight_grad is not None: new_weight_grad = new_weight_grad.detach()
     if new_bias_grad is not None: new_bias_grad = new_bias_grad.detach()
     print(
-        loss,
-        torch.amax(new_hidden_states_grad),
-        torch.amax(new_weight_grad) if new_weight_grad is not None else None,
-        torch.amax(new_bias_grad) if new_bias_grad is not None else None
+        loss.item(),
+        torch.amax(new_hidden_states_grad).item(),
+        torch.amax(new_weight_grad).item() if new_weight_grad is not None else None,
+        torch.amax(new_bias_grad).item() if new_bias_grad is not None else None
     )
 
     torch.testing.assert_close(new_hidden_states_grad, old_hidden_states_grad, atol = atol, rtol = rtol)
