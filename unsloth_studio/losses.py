@@ -102,7 +102,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
         target, n_labels, attention_mask = process_labels(target, attention_mask)
         if reduction == "sum": n_labels = 1.0
 
-        def compute_loss(input_chunk, weight, bias, target):#, mask = None):
+        def inner_compute_loss(input_chunk, weight, bias, target):#, mask = None):
             input_chunk = input_chunk.to(weight.device)
             # if mask is not None:
             #     # Only calculate loss on good attention parts for VLMs
@@ -148,24 +148,25 @@ class UnslothEfficientLoss(torch.autograd.Function):
             print("input_chunk", input_chunk)
             print("target_chunk", target_chunk)
             print("grad_input_chunk", grad_input_chunk)
+            print("inner_compute_loss", inner_compute_loss, type(inner_compute_loss))
             if has_grad_weight and has_grad_bias and has_grad_input:
                 (chunk_grad_input, chunk_grad_weight, chunk_grad_bias,), chunk_loss = torch.func.grad_and_value(
-                    compute_loss, argnums = (0, 1, 2,))(
+                    inner_compute_loss, argnums = (0, 1, 2,))(
                     input_chunk, weight, bias, target_chunk, #mask_chunk,
                 )
             elif not has_grad_weight and not has_grad_bias and has_grad_input:
                 (chunk_grad_input,), chunk_loss = torch.func.grad_and_value(
-                    compute_loss, argnums = (0,))(
+                    inner_compute_loss, argnums = (0,))(
                     input_chunk, weight, bias, target_chunk, #mask_chunk,
                 )
             elif has_grad_weight and not has_grad_bias and has_grad_input:
                 (chunk_grad_input, chunk_grad_weight,), chunk_loss = torch.func.grad_and_value(
-                    compute_loss, argnums = (0, 1,))(
+                    inner_compute_loss, argnums = (0, 1,))(
                     input_chunk, weight, bias, target_chunk, #mask_chunk,
                 )
             elif not has_grad_weight and has_grad_bias and has_grad_input:
                 (chunk_grad_input, chunk_grad_bias,), chunk_loss = torch.func.grad_and_value(
-                    compute_loss, argnums = (0, 2,))(
+                    inner_compute_loss, argnums = (0, 2,))(
                     input_chunk, weight, bias, target_chunk, #mask_chunk,
                 )
             else:
