@@ -69,8 +69,8 @@ class UnslothEfficientLoss(torch.autograd.Function):
         def compute_loss(input_chunk, weight, bias, target):
             input_chunk = input_chunk.to(weight.device)
             weight = weight.to(input_chunk.dtype)
-            bias   = bias  .to(input_chunk.dtype)
             if bias is not None:
+                bias = bias.to(input_chunk.dtype)
                 logits = torch.addmm(bias, input_chunk, weight.t())
             else:
                 logits = torch.matmul(input_chunk, weight.t())
