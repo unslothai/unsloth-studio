@@ -89,16 +89,16 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 shift_attention_mask,
             )
         pass
-        if UNSLOTH_COMPILE_ENABLE:
-            process_labels = torch.compile(
-                process_labels,
-                dynamic = None,
-                options = torch_compile_options,
-            )
-            mark_dynamic(target, 1)
-            # if attention_mask is not None:
-            #     mark_dynamic(attention_mask, 1)
-        pass
+        # if UNSLOTH_COMPILE_ENABLE:
+        #     process_labels = torch.compile(
+        #         process_labels,
+        #         dynamic = None,
+        #         options = torch_compile_options,
+        #     )
+        #     mark_dynamic(target, 1)
+        #     # if attention_mask is not None:
+        #     #     mark_dynamic(attention_mask, 1)
+        # pass
         target, n_labels, attention_mask = process_labels(target, attention_mask)
         if reduction == "sum": n_labels = 1.0
 
@@ -174,13 +174,13 @@ class UnslothEfficientLoss(torch.autograd.Function):
             if grad_input_chunk is not None: grad_input_chunk.copy_(chunk_grad_input)
             total_loss.add_(chunk_loss)
         pass
-        if UNSLOTH_COMPILE_ENABLE:
-            accumulate_chunk = torch.compile(
-                accumulate_chunk,
-                dynamic = None,
-                options = torch_compile_options,
-            )
-        pass
+        # if UNSLOTH_COMPILE_ENABLE:
+        #     accumulate_chunk = torch.compile(
+        #         accumulate_chunk,
+        #         dynamic = None,
+        #         options = torch_compile_options,
+        #     )
+        # pass
 
         input_chunks  = torch.chunk(_input, n_chunks, dim = 0)
         target_chunks = torch.chunk(target, n_chunks, dim = 0)
