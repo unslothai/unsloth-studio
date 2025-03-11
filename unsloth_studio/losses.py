@@ -62,7 +62,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 dynamic = None,
                 options = torch_compile_options,
             )
-            _mark_dynamic(target, 1)
+            mark_dynamic(target, 1)
         target, n_labels = process_labels(target)
         divisor = n_labels if reduction == "mean" else 1.0
 
@@ -152,9 +152,9 @@ class UnslothEfficientLoss(torch.autograd.Function):
             zip(input_chunks, target_chunks, grad_input_chunks):
             
             if UNSLOTH_COMPILE_ENABLE: 
-                _mark_dynamic(input_chunk,      0)
-                _mark_dynamic(target_chunk,     0)
-                _mark_dynamic(grad_input_chunk, 0)
+                mark_dynamic(input_chunk,      0)
+                mark_dynamic(target_chunk,     0)
+                mark_dynamic(grad_input_chunk, 0)
             accumulate_chunk(input_chunk, target_chunk, grad_input_chunk)
         pass
         
