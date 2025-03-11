@@ -48,7 +48,8 @@ class UnslothEfficientLoss(torch.autograd.Function):
         )
 
         has_grad_weight = weight.requires_grad
-        has_grad_input = _input.requires_grad
+        has_grad_input  = _input.requires_grad
+        has_grad_bias   = False
 
         # Mixed precision downcasts from float32 to float16
         weight = weight.to(dtype)
