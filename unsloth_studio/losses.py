@@ -259,6 +259,8 @@ def unsloth_efficient_ce_loss(
     vocab_size = lm_head.out_features
     chunk_size = int(chunk_size * ((128 * 1024) / vocab_size))
 
+    print(1)
+
     return UnslothEfficientLoss.apply(
         hidden_states,
         lm_head.weight,
