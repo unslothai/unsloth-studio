@@ -164,7 +164,6 @@ def _test_efficient_ce_loss(
         torch.testing.assert_close(new_bias_grad, old_bias_grad, atol = atol / 100, rtol = rtol / 100)
     else:
         assert(new_bias_grad is None and old_bias_grad is None)
-    torch.cuda.empty_cache()
 pass
 
 
@@ -186,6 +185,7 @@ def test_efficient_ce_loss():
             ignore_index = -100,
             device = "cuda",
         )
+        torch.cuda.empty_cache()
         _test_efficient_ce_loss(
             bsz = 3,
             qlen = 2047,
@@ -202,6 +202,7 @@ def test_efficient_ce_loss():
             ignore_index = -101,
             device = "cuda",
         )
+        torch.cuda.empty_cache()
         _test_efficient_ce_loss(
             bsz = 1,
             qlen = 1023,
@@ -218,6 +219,7 @@ def test_efficient_ce_loss():
             ignore_index = -200,
             device = "cuda",
         )
+        torch.cuda.empty_cache()
         _test_efficient_ce_loss(
             bsz = 1,
             qlen = 512,
@@ -234,5 +236,6 @@ def test_efficient_ce_loss():
             ignore_index = -10,
             device = "cuda",
         )
+        torch.cuda.empty_cache()
     pass
 pass
