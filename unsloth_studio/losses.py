@@ -22,6 +22,7 @@ __all__ = [
 import torch
 from .utils import *
 
+UNSLOTH_COMPILE_ENABLE = False
 class UnslothEfficientLoss(torch.autograd.Function):
     @staticmethod
     def forward(
