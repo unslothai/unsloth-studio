@@ -22,7 +22,7 @@ __all__ = [
 import torch
 from .utils import *
 
-UNSLOTH_COMPILE_ENABLE = False
+UNSLOTH_COMPILE_ENABLE = True
 class UnslothEfficientLoss(torch.autograd.Function):
     @staticmethod
     def forward(
@@ -179,13 +179,13 @@ class UnslothEfficientLoss(torch.autograd.Function):
             if grad_input_chunk is not None: grad_input_chunk.copy_(chunk_grad_input)
             total_loss.add_(chunk_loss)
         pass
-        # if UNSLOTH_COMPILE_ENABLE:
-        #     accumulate_chunk = torch.compile(
-        #         accumulate_chunk,
-        #         dynamic = None,
-        #         options = torch_compile_options,
-        #     )
-        # pass
+        if UNSLOTH_COMPILE_ENABLE:
+            accumulate_chunk = torch.compile(
+                accumulate_chunk,
+                dynamic = None,
+                options = torch_compile_options,
+            )
+        pass
 
         input_chunks  = torch.chunk(_input, n_chunks, dim = 0)
         target_chunks = torch.chunk(target, n_chunks, dim = 0)
