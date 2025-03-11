@@ -168,74 +168,72 @@ pass
 
 
 def test_efficient_ce_loss():
-    with torch.autograd.set_detect_anomaly(True):
-        _test_efficient_ce_loss(
-            bsz = 4,
-            qlen = 2048,
-            hd = 4096,
-            vocab_size = 16 * 1024,
-            dtype = torch.float16,
-            reduction = "sum",
-            logit_scale = None,
-            logit_softcapping = None,
-            random_state = 3407,
-            has_bias = True,
-            weight_requires_grad = True,
-            bias_requires_grad   = True,
-            ignore_index = -100,
-            device = "cuda",
-        )
-        torch.cuda.empty_cache()
-        _test_efficient_ce_loss(
-            bsz = 3,
-            qlen = 2047,
-            hd = 4097,
-            vocab_size = 64 * 1024,
-            dtype = torch.bfloat16,
-            reduction = "sum",
-            logit_scale = None,
-            logit_softcapping = 50.0,
-            random_state = 3409,
-            has_bias = False,
-            weight_requires_grad = False,
-            bias_requires_grad   = False,
-            ignore_index = -101,
-            device = "cuda",
-        )
-        torch.cuda.empty_cache()
-        _test_efficient_ce_loss(
-            bsz = 1,
-            qlen = 1023,
-            hd = 2048,
-            vocab_size = 128 * 1024,
-            dtype = torch.float16,
-            reduction = "mean",
-            logit_scale = 0.125,
-            logit_softcapping = None,
-            random_state = 3410,
-            has_bias = False,
-            weight_requires_grad = True,
-            bias_requires_grad   = True,
-            ignore_index = -200,
-            device = "cuda",
-        )
-        torch.cuda.empty_cache()
-        _test_efficient_ce_loss(
-            bsz = 1,
-            qlen = 512,
-            hd = 2000,
-            vocab_size = 256 * 1024,
-            dtype = torch.bfloat16,
-            reduction = "mean",
-            logit_scale = 0.125,
-            logit_softcapping = 50.0,
-            random_state = 3411,
-            has_bias = True,
-            weight_requires_grad = True,
-            bias_requires_grad   = True,
-            ignore_index = -10,
-            device = "cuda",
-        )
-        torch.cuda.empty_cache()
-    pass
+    _test_efficient_ce_loss(
+        bsz = 4,
+        qlen = 2048,
+        hd = 4096,
+        vocab_size = 16 * 1024,
+        dtype = torch.float16,
+        reduction = "sum",
+        logit_scale = None,
+        logit_softcapping = None,
+        random_state = 3407,
+        has_bias = True,
+        weight_requires_grad = True,
+        bias_requires_grad   = True,
+        ignore_index = -100,
+        device = "cuda",
+    )
+    torch.cuda.empty_cache()
+    _test_efficient_ce_loss(
+        bsz = 3,
+        qlen = 2047,
+        hd = 4097,
+        vocab_size = 64 * 1024,
+        dtype = torch.bfloat16,
+        reduction = "sum",
+        logit_scale = None,
+        logit_softcapping = 50.0,
+        random_state = 3409,
+        has_bias = False,
+        weight_requires_grad = False,
+        bias_requires_grad   = False,
+        ignore_index = -101,
+        device = "cuda",
+    )
+    torch.cuda.empty_cache()
+    _test_efficient_ce_loss(
+        bsz = 1,
+        qlen = 1023,
+        hd = 2048,
+        vocab_size = 128 * 1024,
+        dtype = torch.float16,
+        reduction = "mean",
+        logit_scale = 0.125,
+        logit_softcapping = None,
+        random_state = 3410,
+        has_bias = False,
+        weight_requires_grad = True,
+        bias_requires_grad   = True,
+        ignore_index = -200,
+        device = "cuda",
+    )
+    torch.cuda.empty_cache()
+    _test_efficient_ce_loss(
+        bsz = 1,
+        qlen = 512,
+        hd = 2000,
+        vocab_size = 256 * 1024,
+        dtype = torch.bfloat16,
+        reduction = "mean",
+        logit_scale = 0.125,
+        logit_softcapping = 50.0,
+        random_state = 3411,
+        has_bias = True,
+        weight_requires_grad = True,
+        bias_requires_grad   = True,
+        ignore_index = -10,
+        device = "cuda",
+    )
+    torch.cuda.empty_cache()
 pass
