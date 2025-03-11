@@ -92,8 +92,8 @@ def _test_efficient_ce_loss(
     loss.backward()
     old_hidden_states_grad = hidden_states.grad.detach()
 
-    old_weight_grad = lm_head.weight.grad
-    old_bias_grad = lm_head.bias.grad
+    old_weight_grad = lm_head.weight.grad if lm_head.weight is not None else None
+    old_bias_grad = lm_head.bias.grad if lm_head.bias is not None else None
     if old_weight_grad is not None: old_weight_grad = old_weight_grad.detach()
     if old_bias_grad is not None: old_bias_grad = old_bias_grad.detach()
 
@@ -121,8 +121,8 @@ def _test_efficient_ce_loss(
     loss.backward()
     torch.testing.assert_close(new_loss, old_loss, atol = 0.1, rtol = 1e-2)
     new_hidden_states_grad = hidden_states.grad.detach()
-    new_weight_grad = lm_head.weight.grad
-    new_bias_grad = lm_head.bias.grad
+    new_weight_grad = lm_head.weight.grad if lm_head.weight is not None else None
+    new_bias_grad = lm_head.bias.grad if lm_head.bias is not None else None
     if new_weight_grad is not None: new_weight_grad = new_weight_grad.detach()
     if new_bias_grad is not None: new_bias_grad = new_bias_grad.detach()
 
