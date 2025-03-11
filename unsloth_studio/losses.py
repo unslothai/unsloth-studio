@@ -94,9 +94,9 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 dynamic = None,
                 options = torch_compile_options,
             )
-            mark_dynamic(target, 0)
+            mark_dynamic(target, 1)
             # if attention_mask is not None:
-            #     mark_dynamic(attention_mask, 0)
+            #     mark_dynamic(attention_mask, 1)
         pass
         target, n_labels, attention_mask = process_labels(target, attention_mask)
         if reduction == "sum": n_labels = 1.0
