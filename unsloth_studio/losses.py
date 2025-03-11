@@ -58,7 +58,10 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 shift_target = shift_target.view(-1)
             else:
                 shift_target = target
-            return shift_target, (shift_target != ignore_index).sum()
+            return (
+                shift_target,
+                (shift_target != ignore_index).sum() if reduction == "mean" else 1.0,
+            )
         pass
         if UNSLOTH_COMPILE_ENABLE:
             process_labels = torch.compile(
@@ -69,7 +72,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
             mark_dynamic(target, 1)
         pass
         target, n_labels = process_labels(target)
-        divisor = n_labels if reduction == "mean" else 1.0
+        if reduction == "sum": n_labels = 1.0
 
         def compute_loss(input_chunk, weight, bias, target):
             input_chunk = input_chunk.to(weight.device)
@@ -92,7 +95,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
             with torch.autocast(device_type = "cuda", enabled = False):
                 logits = logits.float()
                 loss = _loss_function(logits, target)
-            return loss / divisor
+            return loss / n_labels
         pass
 
         has_grad_weight = weight.requires_grad
