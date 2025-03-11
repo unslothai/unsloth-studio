@@ -48,7 +48,6 @@ def _test_efficient_ce_loss(
     if dtype == torch.float16:
         rtol = 1e-3 * 65536 / 100
         atol = 1e-5 * 65536 / 10
-        print(rtol, atol)
     else:
         rtol = 1.6e-2
         atol = 1e-5
@@ -103,7 +102,6 @@ def _test_efficient_ce_loss(
         old_loss = loss.detach()
     pass
     if scaler is not None: loss = scaler.scale(loss)
-    print(loss)
     loss.backward()
     old_hidden_states_grad = hidden_states.grad.detach()
 
@@ -112,6 +110,7 @@ def _test_efficient_ce_loss(
     if old_weight_grad is not None: old_weight_grad = old_weight_grad.detach()
     if old_bias_grad is not None: old_bias_grad = old_bias_grad.detach()
     print(
+        loss,
         torch.amax(old_hidden_states_grad),
         torch.amax(old_weight_grad) if old_weight_grad is not None else None,
         torch.amax(old_bias_grad) if old_bias_grad is not None else None
@@ -139,7 +138,6 @@ def _test_efficient_ce_loss(
         new_loss = loss.detach()
     pass
     if scaler is not None: loss = scaler.scale(loss)
-    print(loss)
     loss.backward()
     torch.testing.assert_close(new_loss, old_loss, atol = 0.1, rtol = 1e-2)
     new_hidden_states_grad = hidden_states.grad.detach()
@@ -148,6 +146,7 @@ def _test_efficient_ce_loss(
     if new_weight_grad is not None: new_weight_grad = new_weight_grad.detach()
     if new_bias_grad is not None: new_bias_grad = new_bias_grad.detach()
     print(
+        loss,
         torch.amax(new_hidden_states_grad),
         torch.amax(new_weight_grad) if new_weight_grad is not None else None,
         torch.amax(new_bias_grad) if new_bias_grad is not None else None
@@ -170,68 +169,70 @@ pass
 
 
 def test_efficient_ce_loss():
-    _test_efficient_ce_loss(
-        bsz = 4,
-        qlen = 2048,
-        hd = 4096,
-        vocab_size = 16 * 1024,
-        dtype = torch.float16,
-        reduction = "sum",
-        logit_scale = None,
-        logit_softcapping = None,
-        random_state = 3407,
-        has_bias = True,
-        weight_requires_grad = True,
-        bias_requires_grad   = True,
-        ignore_index = -100,
-        device = "cuda",
-    )
-    _test_efficient_ce_loss(
-        bsz = 3,
-        qlen = 2047,
-        hd = 4097,
-        vocab_size = 64 * 1024,
-        dtype = torch.bfloat16,
-        reduction = "sum",
-        logit_scale = None,
-        logit_softcapping = 50.0,
-        random_state = 3409,
-        has_bias = False,
-        weight_requires_grad = False,
-        bias_requires_grad   = False,
-        ignore_index = -101,
-        device = "cuda",
-    )
-    _test_efficient_ce_loss(
-        bsz = 1,
-        qlen = 1023,
-        hd = 2048,
-        vocab_size = 128 * 1024,
-        dtype = torch.float16,
-        reduction = "mean",
-        logit_scale = 0.125,
-        logit_softcapping = None,
-        random_state = 3410,
-        has_bias = False,
-        weight_requires_grad = True,
-        bias_requires_grad   = True,
-        ignore_index = -200,
-        device = "cuda",
-    )
-    _test_efficient_ce_loss(
-        bsz = 1,
-        qlen = 512,
-        hd = 2000,
-        vocab_size = 256 * 1024,
-        dtype = torch.bfloat16,
-        reduction = "mean",
-        logit_scale = 0.125,
-        logit_softcapping = 50.0,
-        random_state = 3411,
-        has_bias = True,
-        weight_requires_grad = True,
-        bias_requires_grad   = True,
-        ignore_index = -10,
-        device = "cuda",
-    )
+    with torch.autograd.set_detect_anomaly(True):
+        _test_efficient_ce_loss(
+            bsz = 4,
+            qlen = 2048,
+            hd = 4096,
+            vocab_size = 16 * 1024,
+            dtype = torch.float16,
+            reduction = "sum",
+            logit_scale = None,
+            logit_softcapping = None,
+            random_state = 3407,
+            has_bias = True,
+            weight_requires_grad = True,
+            bias_requires_grad   = True,
+            ignore_index = -100,
+            device = "cuda",
+        )
+        _test_efficient_ce_loss(
+            bsz = 3,
+            qlen = 2047,
+            hd = 4097,
+            vocab_size = 64 * 1024,
+            dtype = torch.bfloat16,
+            reduction = "sum",
+            logit_scale = None,
+            logit_softcapping = 50.0,
+            random_state = 3409,
+            has_bias = False,
+            weight_requires_grad = False,
+            bias_requires_grad   = False,
+            ignore_index = -101,
+            device = "cuda",
+        )
+        _test_efficient_ce_loss(
+            bsz = 1,
+            qlen = 1023,
+            hd = 2048,
+            vocab_size = 128 * 1024,
+            dtype = torch.float16,
+            reduction = "mean",
+            logit_scale = 0.125,
+            logit_softcapping = None,
+            random_state = 3410,
+            has_bias = False,
+            weight_requires_grad = True,
+            bias_requires_grad   = True,
+            ignore_index = -200,
+            device = "cuda",
+        )
+        _test_efficient_ce_loss(
+            bsz = 1,
+            qlen = 512,
+            hd = 2000,
+            vocab_size = 256 * 1024,
+            dtype = torch.bfloat16,
+            reduction = "mean",
+            logit_scale = 0.125,
+            logit_softcapping = 50.0,
+            random_state = 3411,
+            has_bias = True,
+            weight_requires_grad = True,
+            bias_requires_grad   = True,
+            ignore_index = -10,
+            device = "cuda",
+        )
+    pass
 pass
