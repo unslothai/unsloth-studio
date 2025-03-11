@@ -42,6 +42,9 @@ def _test_efficient_ce_loss(
     torch.cuda.manual_seed(random_state)
     torch.manual_seed(random_state)
 
+    # Use grad scaling for float16 as well!
+    scaler = torch.amp.GradScaler() if dtype == torch.float16 else None
+
     hidden_states = torch.randn((bsz, qlen, hd), dtype = dtype, requires_grad = True, device = device)
     if weight_requires_grad or bias_requires_grad:
         lm_head = torch.nn.Linear(hd, vocab_size, bias = has_bias, device = device, dtype = torch.float32)
@@ -89,7 +92,7 @@ def _test_efficient_ce_loss(
         loss = loss / n_items
         old_loss = loss.detach()
     pass
-    loss.backward()
+    (scaler.scale(loss) if scaler is not None else loss).backward()
     old_hidden_states_grad = hidden_states.grad.detach()
 
     old_weight_grad = lm_head.weight.grad if lm_head.weight is not None else None
@@ -118,7 +121,7 @@ def _test_efficient_ce_loss(
         loss = loss / n_items
         new_loss = loss.detach()
     pass
-    loss.backward()
+    (scaler.scale(loss) if scaler is not None else loss).backward()
     torch.testing.assert_close(new_loss, old_loss, atol = 0.1, rtol = 1e-2)
     new_hidden_states_grad = hidden_states.grad.detach()
     new_weight_grad = lm_head.weight.grad if lm_head.weight is not None else None
