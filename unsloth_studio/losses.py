@@ -214,7 +214,7 @@ def unsloth_efficient_ce_loss(
     assert(type(lm_head) is torch.nn.Linear)
     assert(type(labels) is torch.Tensor)
     assert(type(shift) is bool)
-    assert(type(reduction) is str)
+    assert(reduction == "mean" or reduction == "sum")
     assert(logit_scale is None or type(logit_scale) is float)
     assert(logit_softcapping is None or type(logit_softcapping) is float)
     assert(type(ignore_index) is int)
