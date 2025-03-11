@@ -128,6 +128,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
             with torch.autocast(device_type = "cuda", enabled = False):
                 logits = logits.float()
                 loss = _loss_function(logits, target)
+            print("loss", loss)
             return loss / n_labels
         pass
 
@@ -144,6 +145,9 @@ class UnslothEfficientLoss(torch.autograd.Function):
         def accumulate_chunk(input_chunk, target_chunk, grad_input_chunk):#, mask_chunk = None):
             chunk_grad_weight = None
             chunk_grad_bias = None
+            print("input_chunk", input_chunk)
+            print("target_chunk", target_chunk)
+            print("grad_input_chunk", grad_input_chunk)
             if has_grad_weight and has_grad_bias and has_grad_input:
                 (chunk_grad_input, chunk_grad_weight, chunk_grad_bias,), chunk_loss = torch.func.grad_and_value(
                     compute_loss, argnums = (0, 1, 2,))(
