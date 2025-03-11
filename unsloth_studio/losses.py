@@ -193,7 +193,8 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 mark_dynamic(input_chunk,      0)
                 mark_dynamic(target_chunk,     0)
                 mark_dynamic(grad_input_chunk, 0)
-                mark_dynamic(mask_chunk,       0)
+                if mask_chunk is not None:
+                    mark_dynamic(mask_chunk,   0)
             accumulate_chunk(input_chunk, target_chunk, grad_input_chunk, mask_chunk)
         pass
 
