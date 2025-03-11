@@ -206,6 +206,11 @@ def unsloth_efficient_ce_loss(
     assert(type(ignore_index) is int)
     assert(type(chunk_size) is int)
 
+    # Dynamic chunk size
+    # Smaller ones have less chunks, larger ones more chunks
+    vocab_size = lm_head.out_features
+    chunk_size = int(chunk_size * ((128 * 1024) / vocab_size))
+
     return UnslothEfficientLoss.apply(
         hidden_states,
         lm_head.weight,
