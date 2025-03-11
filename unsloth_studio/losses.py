@@ -72,11 +72,14 @@ class UnslothEfficientLoss(torch.autograd.Function):
                     shift_attention_mask[..., :-1] = attention_mask[..., 1:] != 0
                     shift_attention_mask[..., -1]  = False
                     shift_attention_mask = shift_attention_mask.view(-1)
-                pass
+                else:
+                    shift_attention_mask = None
             else:
                 shift_target = target.view(-1)
                 if attention_mask is not None:
                     shift_attention_mask = attention_mask.view(-1)
+                else:
+                    shift_attention_mask = None
             return (
                 shift_target,
                 (shift_target != ignore_index).sum() if reduction == "mean" else 1.0,
