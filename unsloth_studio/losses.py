@@ -40,11 +40,15 @@ class UnslothEfficientLoss(torch.autograd.Function):
     ):
         # All Unsloth Studio code licensed under AGPLv3
         device = weight.device
+        dtype = _input.dtype
         vocab_size, hd = weight.shape
         _loss_function = loss_function(
             reduction = "sum",
             ignore_index = ignore_index,
         )
+        # Mixed precision downcasts from float32 to float16
+        weight = weight.to(dtype)
+        if bias is not None: bias = bias.to(dtype)
 
         def process_labels(target):
             if shift:
@@ -63,14 +67,13 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 options = torch_compile_options,
             )
             mark_dynamic(target, 1)
+        pass
         target, n_labels = process_labels(target)
         divisor = n_labels if reduction == "mean" else 1.0
 
         def compute_loss(input_chunk, weight, bias, target):
             input_chunk = input_chunk.to(weight.device)
-            weight = weight.to(input_chunk.dtype)
             if bias is not None:
-                bias = bias.to(input_chunk.dtype)
                 logits = torch.addmm(bias, input_chunk, weight.t())
             else:
                 logits = torch.matmul(input_chunk, weight.t())
@@ -145,7 +148,8 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 dynamic = None,
                 options = torch_compile_options,
             )
-        
+        pass
+
         input_chunks  = torch.chunk(_input, n_chunks, dim = 0)
         target_chunks = torch.chunk(target, n_chunks, dim = 0)
         grad_input_chunks = torch.chunk(grad_input.view(-1, hd), n_chunks, dim = 0) \
@@ -160,7 +164,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 mark_dynamic(grad_input_chunk, 0)
             accumulate_chunk(input_chunk, target_chunk, grad_input_chunk)
         pass
-        
+
         ctx.save_for_backward(
             grad_input,
             grad_weight,
