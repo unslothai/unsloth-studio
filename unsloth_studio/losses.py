@@ -65,7 +65,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 shift_target[..., -1] = ignore_index
                 shift_target = shift_target.view(-1)
             else:
-                shift_target = target
+                shift_target = target.view(-1)
             return (
                 shift_target,
                 (shift_target != ignore_index).sum() if reduction == "mean" else 1.0,
