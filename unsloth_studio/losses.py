@@ -135,7 +135,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
         grad_weight = torch.zeros_like(weight, dtype = torch.float32, device = device) if has_grad_weight else None
         grad_bias   = torch.zeros_like(bias, dtype = torch.float32, device = device) if has_grad_bias else None
         total_loss  = torch.zeros((), dtype = torch.float32, device = device)
-        grad_input  = torch.empty_like(_input, device = device) if has_grad_input else None
+        grad_input  = torch.zeros_like(_input, device = device) if has_grad_input else None
         _input      = _input.view(-1, hd)
 
         # if > 50%, then make a new chunk
