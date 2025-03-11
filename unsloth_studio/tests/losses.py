@@ -43,7 +43,7 @@ def test_efficient_ce_loss(
     torch.manual_seed(random_state)
 
     hidden_states = torch.randn((bsz, qlen, hd), dtype = dtype, requires_grad = True, device = device)
-    lm_head = torch.nn.Linear(hd, vocab_size, bias = has_bias, device = device).to(dtype)
+    lm_head = torch.nn.Linear(hd, vocab_size, bias = has_bias, device = device, dtype = torch.float32)
     lm_head.weight.requires_grad_(weight_requires_grad)
     if has_bias: lm_head.bias.requires_grad_(bias_requires_grad)
     labels = torch.randint(0, vocab_size, (bsz, qlen), device = device).to(torch.int64)
@@ -59,7 +59,10 @@ def test_efficient_ce_loss(
     if has_bias: lm_head.bias.grad = None
 
     with torch.amp.autocast(device_type = "cuda", dtype = dtype):
-        logits = lm_head(hidden_states).float()
+        logits = lm_head(hidden_states)
+
+    with torch.autocast(device_type = "cuda", enabled = False):
+        logits = logits.float()
         # Logit Scaling like in Cohere, Granite
         if logit_scale is not None:
             logits = logits * logit_scale
@@ -81,14 +84,14 @@ def test_efficient_ce_loss(
         loss = loss_fct(shift_logits, shift_labels)
         loss = loss / n_items
         old_loss = loss.detach()
-        loss.backward()
-        old_hidden_states_grad = hidden_states.grad.detach()
-
-        old_weight_grad = lm_head.weight.grad
-        old_bias_grad = lm_head.bias.grad
-        if old_weight_grad is not None: old_weight_grad = old_weight_grad.detach()
-        if old_bias_grad is not None: old_bias_grad = old_bias_grad.detach()
     pass
+    loss.backward()
+    old_hidden_states_grad = hidden_states.grad.detach()
+
+    old_weight_grad = lm_head.weight.grad
+    old_bias_grad = lm_head.bias.grad
+    if old_weight_grad is not None: old_weight_grad = old_weight_grad.detach()
+    if old_bias_grad is not None: old_bias_grad = old_bias_grad.detach()
 
     # Get new CE Loss
     hidden_states.grad = None
@@ -110,14 +113,14 @@ def test_efficient_ce_loss(
         )
         loss = loss / n_items
         new_loss = loss.detach()
-        loss.backward()
-        torch.testing.assert_close(new_loss, old_loss, atol = 0.1, rtol = 1e-2)
-        new_hidden_states_grad = hidden_states.grad.detach()
-        new_weight_grad = lm_head.weight.grad
-        new_bias_grad = lm_head.bias.grad
-        if new_weight_grad is not None: new_weight_grad = new_weight_grad.detach()
-        if new_bias_grad is not None: new_bias_grad = new_bias_grad.detach()
     pass
+    loss.backward()
+    torch.testing.assert_close(new_loss, old_loss, atol = 0.1, rtol = 1e-2)
+    new_hidden_states_grad = hidden_states.grad.detach()
+    new_weight_grad = lm_head.weight.grad
+    new_bias_grad = lm_head.bias.grad
+    if new_weight_grad is not None: new_weight_grad = new_weight_grad.detach()
+    if new_bias_grad is not None: new_bias_grad = new_bias_grad.detach()
 
     torch.testing.assert_close(new_hidden_states_grad, old_hidden_states_grad)
     if weight_requires_grad:
