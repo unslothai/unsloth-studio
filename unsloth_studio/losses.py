@@ -67,19 +67,21 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 shift_target = shift_target.view(-1)
 
                 # For VLMs like Paligemma, Idefics - used to mask tokens like <image> out
-                if attention_mask is not None:
-                    shift_attention_mask = torch.empty_like(attention_mask, device = device, dtype = torch.bool)
-                    shift_attention_mask[..., :-1] = attention_mask[..., 1:] != 0
-                    shift_attention_mask[..., -1]  = False
-                    shift_attention_mask = shift_attention_mask.view(-1)
-                else:
-                    shift_attention_mask = None
+                # if attention_mask is not None:
+                #     shift_attention_mask = torch.empty_like(attention_mask, device = device, dtype = torch.bool)
+                #     shift_attention_mask[..., :-1] = attention_mask[..., 1:] != 0
+                #     shift_attention_mask[..., -1]  = False
+                #     shift_attention_mask = shift_attention_mask.view(-1)
+                # else:
+                #     shift_attention_mask = None
+                shift_attention_mask = None
             else:
                 shift_target = target.view(-1)
-                if attention_mask is not None:
-                    shift_attention_mask = attention_mask.view(-1)
-                else:
-                    shift_attention_mask = None
+                # if attention_mask is not None:
+                #     shift_attention_mask = attention_mask.view(-1)
+                # else:
+                #     shift_attention_mask = None
+                shift_attention_mask = None
             return (
                 shift_target,
                 (shift_target != ignore_index).sum() if reduction == "mean" else 1.0,
@@ -93,19 +95,19 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 options = torch_compile_options,
             )
             mark_dynamic(target, 0)
-            if attention_mask is not None:
-                mark_dynamic(attention_mask, 0)
+            # if attention_mask is not None:
+            #     mark_dynamic(attention_mask, 0)
         pass
         target, n_labels, attention_mask = process_labels(target, attention_mask)
         if reduction == "sum": n_labels = 1.0
 
-        def compute_loss(input_chunk, weight, bias, target, mask = None):
+        def compute_loss(input_chunk, weight, bias, target):#, mask = None):
             input_chunk = input_chunk.to(weight.device)
-            if mask is not None:
-                # Only calculate loss on good attention parts for VLMs
-                input_chunk = input_chunk[mask]
-                target = target[mask]
-            pass
+            # if mask is not None:
+            #     # Only calculate loss on good attention parts for VLMs
+            #     input_chunk = input_chunk[mask]
+            #     target = target[mask]
+            # pass
             if bias is not None:
                 logits = torch.addmm(bias, input_chunk, weight.t())
             else:
@@ -138,28 +140,28 @@ class UnslothEfficientLoss(torch.autograd.Function):
         n_chunks = int(round(_input.shape[0] / chunk_size))
         if n_chunks == 0: n_chunks = 1
 
-        def accumulate_chunk(input_chunk, target_chunk, grad_input_chunk, mask_chunk = None):
+        def accumulate_chunk(input_chunk, target_chunk, grad_input_chunk):#, mask_chunk = None):
             chunk_grad_weight = None
             chunk_grad_bias = None
             if has_grad_weight and has_grad_bias and has_grad_input:
                 (chunk_grad_input, chunk_grad_weight, chunk_grad_bias,), chunk_loss = torch.func.grad_and_value(
                     compute_loss, argnums = (0, 1, 2,))(
-                    input_chunk, weight, bias, target_chunk, mask_chunk,
+                    input_chunk, weight, bias, target_chunk, #mask_chunk,
                 )
             elif not has_grad_weight and not has_grad_bias and has_grad_input:
                 (chunk_grad_input,), chunk_loss = torch.func.grad_and_value(
                     compute_loss, argnums = (0,))(
-                    input_chunk, weight, bias, target_chunk, mask_chunk,
+                    input_chunk, weight, bias, target_chunk, #mask_chunk,
                 )
             elif has_grad_weight and not has_grad_bias and has_grad_input:
                 (chunk_grad_input, chunk_grad_weight,), chunk_loss = torch.func.grad_and_value(
                     compute_loss, argnums = (0, 1,))(
-                    input_chunk, weight, bias, target_chunk, mask_chunk,
+                    input_chunk, weight, bias, target_chunk, #mask_chunk,
                 )
             elif not has_grad_weight and has_grad_bias and has_grad_input:
                 (chunk_grad_input, chunk_grad_bias,), chunk_loss = torch.func.grad_and_value(
                     compute_loss, argnums = (0, 2,))(
-                    input_chunk, weight, bias, target_chunk, mask_chunk,
+                    input_chunk, weight, bias, target_chunk, #mask_chunk,
                 )
             else:
                 raise RuntimeError(
@@ -193,9 +195,9 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 mark_dynamic(input_chunk,      0)
                 mark_dynamic(target_chunk,     0)
                 mark_dynamic(grad_input_chunk, 0)
-                if mask_chunk is not None:
-                    mark_dynamic(mask_chunk,   0)
-            accumulate_chunk(input_chunk, target_chunk, grad_input_chunk, mask_chunk)
+                # if mask_chunk is not None:
+                #     mark_dynamic(mask_chunk,   0)
+            accumulate_chunk(input_chunk, target_chunk, grad_input_chunk)#, mask_chunk)
         pass
 
         ctx.save_for_backward(
@@ -218,7 +220,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
         pass
         return (
             grad_input, grad_weight, None, grad_bias,
-            None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None,
         )
     pass
 pass
@@ -246,9 +248,10 @@ def unsloth_efficient_ce_loss(
     assert(logit_softcapping is None or type(logit_softcapping) is float)
     assert(type(ignore_index) is int)
     assert(type(chunk_size) is int)
-    if attention_mask is not None:
-        assert(type(attention_mask) is torch.Tensor)
-        assert(attention_mask.shape == labels.shape)
+    # if attention_mask is not None:
+    #     assert(type(attention_mask) is torch.Tensor)
+    #     assert(attention_mask.shape == labels.shape)
+    assert(attention_mask is None)
 
     # Dynamic chunk size
     # Smaller ones have less chunks, larger ones more chunks
