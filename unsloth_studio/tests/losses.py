@@ -14,7 +14,7 @@
 __all__ = [
     "test_efficient_ce_loss",
 ]
-from .losses import (
+from ..losses import (
     UnslothEfficientLoss,
     unsloth_efficient_ce_loss,
 )
