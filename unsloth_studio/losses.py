@@ -185,6 +185,7 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 dynamic = None,
                 options = torch_compile_options,
             )
+            print("accumulate_chunk", accumulate_chunk, type(accumulate_chunk))
         pass
 
         input_chunks  = torch.chunk(_input, n_chunks, dim = 0)
