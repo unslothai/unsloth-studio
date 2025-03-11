@@ -46,9 +46,16 @@ class UnslothEfficientLoss(torch.autograd.Function):
             reduction = "sum",
             ignore_index = ignore_index,
         )
+
+        has_grad_weight = weight.requires_grad
+        has_grad_input = _input.requires_grad
+
         # Mixed precision downcasts from float32 to float16
         weight = weight.to(dtype)
-        if bias is not None: bias = bias.to(dtype)
+        if bias is not None:
+            has_grad_bias = bias.requires_grad
+            bias = bias.to(dtype)
+        pass
 
         def process_labels(target):
             if shift:
@@ -97,10 +104,6 @@ class UnslothEfficientLoss(torch.autograd.Function):
                 loss = _loss_function(logits, target)
             return loss / n_labels
         pass
-
-        has_grad_weight = weight.requires_grad
-        has_grad_bias = bias is not None and bias.requires_grad
-        has_grad_input = _input.requires_grad
 
         grad_weight = torch.zeros_like(weight, dtype = torch.float32, device = device) if has_grad_weight else None
         grad_bias   = torch.zeros_like(bias, dtype = torch.float32, device = device) if has_grad_bias else None
