@@ -36,7 +36,7 @@ def test_efficient_ce_loss(
     bias_requires_grad   = True,
     ignore_index = -100,
     device = "cuda",
-)
+):
     # All Unsloth Studio code licensed under AGPLv3
     torch.cuda.manual_seed(random_state)
     torch.manual_seed(random_state)
