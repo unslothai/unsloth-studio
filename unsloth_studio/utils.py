@@ -16,7 +16,7 @@
 
 import os
 from typing import Optional, Tuple, Dict, List, Callable, Any
-from torch._dynamo import mark_dynamic as _mark_dynamic
+from torch._dynamo import mark_dynamic
 
 UNSLOTH_COMPILE_ENABLE  = os.environ.get("UNSLOTH_COMPILE_DISABLE", "0") == "0"
 UNSLOTH_COMPILE_DEBUG   = os.environ.get("UNSLOTH_COMPILE_DEBUG",   "0") == "1"
